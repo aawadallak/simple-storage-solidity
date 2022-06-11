@@ -1,19 +1,45 @@
-import { expect } from "chai";
+import { assert } from "chai";
+import { Contract } from "ethers";
 import { ethers } from "hardhat";
 
-describe("Greeter", function () {
-  it("Should return the new greeting once it's changed", async function () {
-    const Greeter = await ethers.getContractFactory("Greeter");
-    const greeter = await Greeter.deploy("Hello, world!");
-    await greeter.deployed();
+describe("Deploy", function () {
+  let simpleStorageFactory;
+  let simpleStorage: Contract;
 
-    expect(await greeter.greet()).to.equal("Hello, world!");
+  beforeEach(async function () {
+    simpleStorageFactory = await ethers.getContractFactory("SimpleStorage");
+    simpleStorage = await simpleStorageFactory.deploy();
+  });
 
-    const setGreetingTx = await greeter.setGreeting("Hola, mundo!");
+  it("should deploy a contract", async function () {
+    assert.isNotNull(simpleStorage.address);
+  });
 
-    // wait until the transaction is mined
-    await setGreetingTx.wait();
+  it("Should start retrieve with the 0 value", async function () {
+    const value = await simpleStorage.retrieve();
+    assert.equal(value.toString(), "0");
+  });
 
-    expect(await greeter.greet()).to.equal("Hola, mundo!");
+  it("Should update when we call store", async function () {
+    const expected = "7";
+
+    const txResponse = await simpleStorage.store(expected);
+    await txResponse.wait(1);
+
+    const value = await simpleStorage.retrieve();
+    assert.equal(value.toString(), expected);
+  });
+
+  it("Should expected to be 0 after call clear", async function () {
+    const expected = "0";
+
+    const txResponse = await simpleStorage.store("7");
+    await txResponse.wait(1);
+
+    const clearResponse = await simpleStorage.clear();
+    await clearResponse.wait(1);
+
+    const value = await simpleStorage.retrieve();
+    assert.equal(value.toString(), expected);
   });
 });
