@@ -1,45 +1,50 @@
-import { assert } from "chai";
-import { Contract } from "ethers";
-import { ethers } from "hardhat";
+import { assert } from "chai"
+import { Contract } from "ethers"
+import { ethers } from "hardhat"
+import { SimpleStorage } from "../typechain/SimpleStorage"
+import { SimpleStorage__factory } from "../typechain/factories/SimpleStorage__factory"
 
 describe("Deploy", function () {
-  let simpleStorageFactory;
-  let simpleStorage: Contract;
+    let factory: SimpleStorage__factory
+    let simpleStorage: SimpleStorage
 
-  beforeEach(async function () {
-    simpleStorageFactory = await ethers.getContractFactory("SimpleStorage");
-    simpleStorage = await simpleStorageFactory.deploy();
-  });
+    beforeEach(async function () {
+        factory = (await ethers.getContractFactory(
+            "SimpleStorage"
+        )) as SimpleStorage__factory
 
-  it("should deploy a contract", async function () {
-    assert.isNotNull(simpleStorage.address);
-  });
+        simpleStorage = await factory.deploy()
+    })
 
-  it("Should start retrieve with the 0 value", async function () {
-    const value = await simpleStorage.retrieve();
-    assert.equal(value.toString(), "0");
-  });
+    it("should deploy a contract", async function () {
+        assert.isNotNull(simpleStorage.address)
+    })
 
-  it("Should update when we call store", async function () {
-    const expected = "7";
+    it("Should start retrieve with the 0 value", async function () {
+        const value = await simpleStorage.retrieve()
+        assert.equal(value.toString(), "0")
+    })
 
-    const txResponse = await simpleStorage.store(expected);
-    await txResponse.wait(1);
+    it("Should update when we call store", async function () {
+        const expected = "7"
 
-    const value = await simpleStorage.retrieve();
-    assert.equal(value.toString(), expected);
-  });
+        const txResponse = await simpleStorage.store(expected)
+        await txResponse.wait(1)
 
-  it("Should expected to be 0 after call clear", async function () {
-    const expected = "0";
+        const value = await simpleStorage.retrieve()
+        assert.equal(value.toString(), expected)
+    })
 
-    const txResponse = await simpleStorage.store("7");
-    await txResponse.wait(1);
+    it("Should expected to be 0 after call clear", async function () {
+        const expected = "0"
 
-    const clearResponse = await simpleStorage.clear();
-    await clearResponse.wait(1);
+        const txResponse = await simpleStorage.store("7")
+        await txResponse.wait(1)
 
-    const value = await simpleStorage.retrieve();
-    assert.equal(value.toString(), expected);
-  });
-});
+        const clearResponse = await simpleStorage.clear()
+        await clearResponse.wait(1)
+
+        const value = await simpleStorage.retrieve()
+        assert.equal(value.toString(), expected)
+    })
+})
